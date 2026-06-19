@@ -7,10 +7,80 @@
   <title>Profil Scratch - Scratch_2_0_2_4</title>
  </head>
  <body>
-   <script>
- document.getElementById('statFollowers').textContent = Math.max(0, totalFollowers - BOTS).toLocaleString('fr-FR');
- document.getElementById('statProjets').textContent   = totalProjets.toLocaleString('fr-FR');
- document.getElementById('statSuivi').textContent     = totalSuivis.toLocaleString('fr-FR');
-   </script>
-  </body>
+<!-- Bloc statistiques + script (autonome) -->
+<div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #f0f0f0;">
+  <div class="stat" style="padding:1.1rem;text-align:center;">
+    <div class="stat-value" id="statFollowers" style="font-size:22px;font-weight:700;color:#1a1a1a;">
+      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
+    </div>
+    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Followers</div>
+  </div>
+  <div class="stat" style="padding:1.1rem;text-align:center;">
+    <div class="stat-value" id="statProjets" style="font-size:22px;font-weight:700;color:#1a1a1a;">
+      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
+    </div>
+    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Projets</div>
+  </div>
+  <div class="stat" style="padding:1.1rem;text-align:center;">
+    <div class="stat-value" id="statSuivi" style="font-size:22px;font-weight:700;color:#1a1a1a;">
+      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
+    </div>
+    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Abonnements</div>
+  </div>
+</div>
+
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+<script>
+/* Remplissage automatique des statistiques (modifiez USERNAME / BOTS si besoin) */
+const USERNAME = 'Scratch_2_0_2_4';
+const BOTS = 0; // nombre de comptes à soustraire si nécessaire
+const PROXY = 'https://corsproxy.io/?url=';
+
+function apiURL(path) {
+  return PROXY + encodeURIComponent('https://api.scratch.mit.edu' + path);
+}
+
+async function countPages(path) {
+  let total = 0, offset = 0;
+  while (true) {
+    try {
+      const res = await fetch(apiURL(`${path}?limit=40&offset=${offset}`));
+      if (!res.ok) break;
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) break;
+      total += data.length;
+      if (data.length < 40) break;
+      offset += 40;
+    } catch (e) {
+      console.error('countPages error', e);
+      break;
+    }
+  }
+  return total;
+}
+
+(async function fillStats() {
+  try {
+    const [followers, projets, following] = await Promise.all([
+      countPages(`/users/${USERNAME}/followers`),
+      countPages(`/users/${USERNAME}/projects`),
+      countPages(`/users/${USERNAME}/following`)
+    ]);
+
+    const totalFollowers = Math.max(0, followers - BOTS);
+
+    document.getElementById('statFollowers').textContent = totalFollowers.toLocaleString('fr-FR');
+    document.getElementById('statProjets').textContent   = projets.toLocaleString('fr-FR');
+    document.getElementById('statSuivi').textContent     = following.toLocaleString('fr-FR');
+  } catch (e) {
+    console.error(e);
+    document.getElementById('statFollowers').textContent = '—';
+    document.getElementById('statProjets').textContent   = '—';
+    document.getElementById('statSuivi').textContent     = '—';
+  }
+})();
+</script>  </body>
 </html>
