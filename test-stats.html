@@ -7,80 +7,60 @@
   <title>Profil Scratch - Scratch_2_0_2_4</title>
  </head>
  <body>
-<!-- Bloc statistiques + script (autonome) -->
-<div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #f0f0f0;">
-  <div class="stat" style="padding:1.1rem;text-align:center;">
-    <div class="stat-value" id="statFollowers" style="font-size:22px;font-weight:700;color:#1a1a1a;">
-      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
-    </div>
-    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Followers</div>
+<!-- Simple bloc statistiques (copier/coller) -->
+<div id="stats" style="display:flex;gap:12px;max-width:520px;margin:1rem auto;font-family:Arial,Helvetica,sans-serif;">
+  <div style="flex:1;text-align:center;padding:12px;border:1px solid #eee;border-radius:8px;">
+    <div id="follows" style="font-weight:700;font-size:20px">…</div>
+    <div style="color:#666;font-size:12px">Followers</div>
   </div>
-  <div class="stat" style="padding:1.1rem;text-align:center;">
-    <div class="stat-value" id="statProjets" style="font-size:22px;font-weight:700;color:#1a1a1a;">
-      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
-    </div>
-    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Projets</div>
+  <div style="flex:1;text-align:center;padding:12px;border:1px solid #eee;border-radius:8px;">
+    <div id="projects" style="font-weight:700;font-size:20px">…</div>
+    <div style="color:#666;font-size:12px">Projets</div>
   </div>
-  <div class="stat" style="padding:1.1rem;text-align:center;">
-    <div class="stat-value" id="statSuivi" style="font-size:22px;font-weight:700;color:#1a1a1a;">
-      <span class="spin" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
-    </div>
-    <div class="stat-label" style="font-size:12px;color:#999;margin-top:3px;">Abonnements</div>
+  <div style="flex:1;text-align:center;padding:12px;border:1px solid #eee;border-radius:8px;">
+    <div id="following" style="font-weight:700;font-size:20px">…</div>
+    <div style="color:#666;font-size:12px">Abonnements</div>
   </div>
 </div>
 
-<style>
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-</style>
-
 <script>
-/* Remplissage automatique des statistiques (modifiez USERNAME / BOTS si besoin) */
+/* Configuration */
 const USERNAME = 'Scratch_2_0_2_4';
-const BOTS = 0; // nombre de comptes à soustraire si nécessaire
+const BOTS = 0; // soustraire si nécessaire
 const PROXY = 'https://corsproxy.io/?url=';
 
-function apiURL(path) {
-  return PROXY + encodeURIComponent('https://api.scratch.mit.edu' + path);
-}
-
+/* Compte les éléments paginés (limit=40) */
 async function countPages(path) {
   let total = 0, offset = 0;
   while (true) {
-    try {
-      const res = await fetch(apiURL(`${path}?limit=40&offset=${offset}`));
-      if (!res.ok) break;
-      const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) break;
-      total += data.length;
-      if (data.length < 40) break;
-      offset += 40;
-    } catch (e) {
-      console.error('countPages error', e);
-      break;
-    }
+    const res = await fetch(PROXY + encodeURIComponent('https://api.scratch.mit.edu' + path + `?limit=40&offset=${offset}`));
+    if (!res.ok) break;
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) break;
+    total += data.length;
+    if (data.length < 40) break;
+    offset += 40;
   }
   return total;
 }
 
-(async function fillStats() {
+(async function fillStats(){
   try {
-    const [followers, projets, following] = await Promise.all([
+    const [f, p, fg] = await Promise.all([
       countPages(`/users/${USERNAME}/followers`),
       countPages(`/users/${USERNAME}/projects`),
       countPages(`/users/${USERNAME}/following`)
     ]);
-
-    const totalFollowers = Math.max(0, followers - BOTS);
-
-    document.getElementById('statFollowers').textContent = totalFollowers.toLocaleString('fr-FR');
-    document.getElementById('statProjets').textContent   = projets.toLocaleString('fr-FR');
-    document.getElementById('statSuivi').textContent     = following.toLocaleString('fr-FR');
+    document.getElementById('follows').textContent = Math.max(0, f - BOTS).toLocaleString('fr-FR');
+    document.getElementById('projects').textContent = p.toLocaleString('fr-FR');
+    document.getElementById('following').textContent = fg.toLocaleString('fr-FR');
   } catch (e) {
     console.error(e);
-    document.getElementById('statFollowers').textContent = '—';
-    document.getElementById('statProjets').textContent   = '—';
-    document.getElementById('statSuivi').textContent     = '—';
+    document.getElementById('follows').textContent = '—';
+    document.getElementById('projects').textContent = '—';
+    document.getElementById('following').textContent = '—';
   }
 })();
-</script>  </body>
+</script>
+ </body>
 </html>
