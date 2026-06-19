@@ -1,18 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Stats simples — Scratch_2_0_2_4</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stats — Scratch_2_0_2_4 (simple)</title>
   <style>
     body{font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f6f8ff;margin:0}
     .box{background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.06);width:360px;text-align:center}
     .n{font-weight:700;font-size:24px}
     .l{color:#666;margin-top:6px;font-size:13px}
     .err{color:#c33;margin-top:10px;font-size:13px}
+    .small{font-size:12px;color:#666;margin-top:8px}
+    button{margin-top:10px;padding:8px 12px;border-radius:8px;border:0;background:#4C97FF;color:white;cursor:pointer}
   </style>
 </head>
 <body>
-  <div class="box">
+  <div class="box" role="main" aria-live="polite">
     <div class="n" id="followers">…</div>
     <div class="l">Followers</div>
 
@@ -27,34 +30,158 @@
     <div class="l">Abonnements</div>
 
     <div class="err" id="err" aria-live="polite"></div>
+    <div class="small" id="note">Essai de récupération des données…</div>
+
+    <button id="retry">Réessayer</button>
   </div>
 
 <script>
-  const USER = 'Scratch_2_0_2_4';
-  const out = id => document.getElementById(id);
-  
-  async function load() {
+/*
+  Simple single-file solution with multiple public proxy fallbacks.
+  If none of these work, a server-side relay is required.
+*/
+const USER = 'Scratch_2_0_2_4';
+const MAX_PAGES_COUNT = 300; // safe limit for paginated counts
+const proxies = [
+  '', // direct (may fail due to CORS)
+  'https://api.allorigins.win/raw?url=',
+  'https://r.jina.ai/http://',          // can return raw content
+  'https://corsproxy.io/?url=',
+  'https://thingproxy.freeboard.io/fetch/'
+];
+
+const el = id => document.getElementById(id);
+const note = el('note');
+const err = el('err');
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function tryFetchWithProxies(targetUrl) {
+  // try each prefix until success
+  for (const prefix of proxies) {
+    let url;
+    if (!prefix) url = targetUrl;
+    else {
+      // special case jina: expects the target after /http:// (we just append full target)
+      url = prefix + encodeURIComponent(targetUrl);
+      // but r.jina.ai sometimes works better without encoding for HTTPS targets:
+      if (prefix.includes('r.jina.ai')) {
+        // build as: https://r.jina.ai/http://https://target...
+        url = prefix + targetUrl;
+      }
+    }
     try {
-      // Utilise un proxy CORS public qui ne cache pas
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://scratchdb.lefty.one/v3/user/info/' + encodeURIComponent(USER));
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const j = await res.json();
-      
-      const followers = j.statistics?.followers ?? j.stats?.followers ?? j.followers ?? null;
-      const projects  = j.statistics?.projects  ?? j.stats?.projects  ?? j.project_count ?? j.projects ?? null;
-      const following = j.statistics?.following ?? j.stats?.following ?? j.following ?? null;
-      
-      out('followers').textContent = (typeof followers === 'number') ? followers.toLocaleString('fr-FR') : '—';
-      out('projects').textContent  = (typeof projects  === 'number') ? projects.toLocaleString('fr-FR')  : '—';
-      out('following').textContent = (typeof following === 'number') ? following.toLocaleString('fr-FR') : '—';
+      const res = await fetch(url);
+      if (!res.ok) {
+        // try next proxy
+        continue;
+      }
+      // Try to parse JSON. r.jina.ai may return text even for JSON; handle that.
+      try {
+        return await res.json();
+      } catch (jsonErr) {
+        const txt = await res.text();
+        try { return JSON.parse(txt); } catch (e) { return txt; }
+      }
     } catch (e) {
-      out('err').textContent = 'Erreur : ' + e.message;
-      out('followers').textContent = out('projects').textContent = out('following').textContent = '—';
-      console.error(e);
+      // network or CORS blocked for this proxy — try next
+      continue;
     }
   }
-  load();
+  // if we get here, no proxy worked
+  throw new Error('Tous les relais publics ont échoué (CORS / réseau).');
+}
+
+async function countPages(path) {
+  let total = 0;
+  const pageSize = 40;
+  for (let page = 0; page < MAX_PAGES_COUNT; page++) {
+    const offset = page * pageSize;
+    const target = `https://api.scratch.mit.edu${path}?limit=${pageSize}&offset=${offset}`;
+    try {
+      const data = await tryFetchWithProxies(target);
+      // if proxy returned text or something unexpected, break
+      if (!Array.isArray(data)) {
+        // If returned an object with a 'data' array (some proxies wrap), try to find it
+        if (data && Array.isArray(data.data)) {
+          if (data.data.length === 0) break;
+          total += data.data.length;
+          if (data.data.length < pageSize) break;
+          continue;
+        }
+        // not an array -> cannot continue
+        break;
+      }
+      if (data.length === 0) break;
+      total += data.length;
+      if (data.length < pageSize) break;
+      // small delay so we don't hammer relays
+      await sleep(100);
+    } catch (e) {
+      // give up counting pages if proxies fail mid-way
+      console.warn('countPages failed at page', page, e);
+      throw e;
+    }
+  }
+  return total;
+}
+
+async function fetchCounts() {
+  note.textContent = 'Tentative rapide via ScratchDB…';
+  // 1) Try ScratchDB (single call)
+  try {
+    const scratchDbUrl = `https://scratchdb.lefty.one/v3/user/info/${encodeURIComponent(USER)}`;
+    const j = await tryFetchWithProxies(scratchDbUrl);
+    // if we received a string, try parse, else use object
+    const data = (typeof j === 'string') ? JSON.parse(j) : j;
+    const followers = data && (data.statistics?.followers ?? data.stats?.followers ?? data.followers ?? null);
+    const projects  = data && (data.statistics?.projects  ?? data.stats?.projects  ?? data.project_count ?? data.projects ?? null);
+    const following = data && (data.statistics?.following ?? data.stats?.following ?? data.following ?? null);
+    if (typeof followers === 'number' || typeof projects === 'number' || typeof following === 'number') {
+      return { followers, projects, following, source: 'ScratchDB (via proxy/direct)' };
+    }
+  } catch (e) {
+    console.warn('ScratchDB attempt failed:', e && e.message);
+  }
+
+  // 2) Fallback paginé vers api.scratch.mit.edu (plus lent)
+  note.textContent = 'Fallback : comptage paginé via api.scratch.mit.edu (peut prendre du temps)…';
+  try {
+    const [followers, projects, following] = await Promise.all([
+      countPages(`/users/${encodeURIComponent(USER)}/followers`),
+      countPages(`/users/${encodeURIComponent(USER)}/projects`),
+      countPages(`/users/${encodeURIComponent(USER)}/following`)
+    ]);
+    return { followers, projects, following, source: 'api.scratch.mit.edu (paginé via proxy)' };
+  } catch (e) {
+    throw new Error('Impossible de récupérer les statistiques via les relais publics.');
+  }
+}
+
+async function show() {
+  // reset UI
+  el('followers').textContent = '…';
+  el('projects').textContent = '…';
+  el('following').textContent = '…';
+  err.textContent = '';
+  note.textContent = 'Récupération en cours…';
+
+  try {
+    const counts = await fetchCounts();
+    el('followers').textContent = (counts.followers == null) ? '—' : counts.followers.toLocaleString('fr-FR');
+    el('projects').textContent  = (counts.projects  == null) ? '—' : counts.projects.toLocaleString('fr-FR');
+    el('following').textContent = (counts.following == null) ? '—' : counts.following.toLocaleString('fr-FR');
+    note.textContent = `Source: ${counts.source}. Actualise pour mettre à jour.`;
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Erreur : ' + e.message;
+    note.textContent = 'Si cela échoue, la seule solution fiable est un petit relais serveur (je peux te fournir le code).';
+    el('followers').textContent = el('projects').textContent = el('following').textContent = '—';
+  }
+}
+
+document.getElementById('retry').addEventListener('click', show);
+show();
 </script>
 </body>
 </html>
