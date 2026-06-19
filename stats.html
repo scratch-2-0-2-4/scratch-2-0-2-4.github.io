@@ -2,38 +2,47 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Statistiques Scratch</title>
+  <title>Followers Scratch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
+      background: #f4f4f4;
       text-align: center;
+      padding-top: 60px;
     }
-    .card {
+    .box {
       background: white;
-      padding: 20px;
+      padding: 25px;
+      width: 260px;
       margin: auto;
-      width: 300px;
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 0 10px #0003;
     }
-    h1 {
-      margin-bottom: 10px;
-    }
-    .stat {
-      font-size: 20px;
-      margin: 8px 0;
+    .number {
+      font-size: 48px;
+      font-weight: bold;
+      color: #007bff;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Statistiques Scratch_2_0_2_4</h1>
-
-    <div class="stat">Followers : 152</div>
+  <div class="box">
+    <h2>Followers</h2>
+    <div id="followers" class="number">Chargement...</div>
+    <p>Scratch_2_0_2_4</p>
   </div>
+
+  <script>
+    fetch("https://scratchdb.lefty.one/v3/user/info/Scratch_2_0_2_4")
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById("followers").textContent = data.followers;
+      })
+      .catch(() => {
+        document.getElementById("followers").textContent = "Erreur";
+      });
+  </script>
 
 </body>
 </html>
