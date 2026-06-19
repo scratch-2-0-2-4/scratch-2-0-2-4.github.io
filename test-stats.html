@@ -1,134 +1,151 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8"/>
-  <title>Stats Scratch (scratchviews)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f6f8ff;margin:0}
-    .box{background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.06);width:360px;text-align:center}
-    .n{font-weight:700;font-size:24px}
-    .l{color:#666;margin-top:6px;font-size:13px}
-    .err{color:#c33;margin-top:10px;font-size:13px}
-    button{margin-top:12px;padding:8px 12px;border-radius:8px;border:0;background:#4C97FF;color:#fff;cursor:pointer}
-    .small{font-size:12px;color:#666;margin-top:8px}
-  </style>
-</head>
-<body>
-  <div class="box" role="main" aria-live="polite">
-    <div class="n" id="followers">…</div>
-    <div class="l">Followers</div>
+  <script>
+    const USERNAME = 'Scratch_2_0_2_4';
+    const BOTS = 0; // comptes supprimés/bots à soustraire
+    const PROXY = 'https://corsproxy.io/?url=';
+    let darkMode = true;
 
-    <div style="height:12px"></div>
-
-    <div class="n" id="projects">…</div>
-    <div class="l">Projets</div>
-
-    <div style="height:12px"></div>
-
-    <div class="n" id="following">…</div>
-    <div class="l">Abonnements</div>
-
-    <div class="err" id="err"></div>
-    <div class="small" id="note">Récupération depuis scratchviews.com/users/Scratch_2_0_2_4 …</div>
-    <button id="retry">Réessayer</button>
-  </div>
-
-<script>
-const TARGET = 'https://scratchviews.com/users/Scratch_2_0_2_4';
-const FALLBACK_PROXIES = [
-  'https://api.allorigins.win/raw?url=',
-  'https://r.jina.ai/http://',      // sometimes works for simple GET
-  'https://corsproxy.io/?url='
-];
-
-const el = id => document.getElementById(id);
-
-function parseNumberStr(s){
-  if(!s) return null;
-  // keep digits only
-  const digits = s.replace(/[^\d]/g,'');
-  if(!digits) return null;
-  return parseInt(digits, 10);
-}
-
-function extractCountsFromHtml(html){
-  // Try a few label patterns. Return object {followers, projects, following} (numbers or null)
-  const tryFind = (label) => {
-    // label may appear before or after the number; try both
-    const reAfter = new RegExp(label + '[^\\d]{0,60}([\\d.,\\s]+)', 'i');
-    const reBefore = new RegExp('([\\d.,\\s]+)[^\\d]{0,60}' + label, 'i');
-    let m = html.match(reAfter);
-    if(m && m[1]) return parseNumberStr(m[1]);
-    m = html.match(reBefore);
-    if(m && m[1]) return parseNumberStr(m[1]);
-    return null;
-  };
-
-  // common labels on scratchviews page (english)
-  const followers = tryFind('Followers') ?? tryFind('follower') ?? tryFind('followers');
-  const projects  = tryFind('Projects') ?? tryFind('Projects') ?? tryFind('projects') ?? tryFind('Project Count');
-  const following = tryFind('Following') ?? tryFind('following') ?? tryFind('Following');
-  return { followers, projects, following };
-}
-
-async function fetchTextWithAttempts(url){
-  // try direct fetch first
-  try {
-    const r = await fetch(url);
-    if(r.ok){
-      return await r.text();
+    function toggleDark() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark', darkMode);
+      document.getElementById('darkBtn').textContent = darkMode ? '☀️ Mode clair' : '🌙 Mode sombre';
+      initParticles();
     }
-  } catch(e){
-    // direct failed (likely CORS) - fall back to proxies
-  }
-  // try proxies one by one
-  for(const p of FALLBACK_PROXIES){
-    try{
-      let fetchUrl;
-      if(p.includes('r.jina.ai')) {
-        // jina expects http:// then the full target
-        fetchUrl = p + url;
-      } else {
-        fetchUrl = p + encodeURIComponent(url);
+
+    function apiURL(path) {
+      return PROXY + encodeURIComponent('https://api.scratch.mit.edu' + path);
+    }
+
+    async function countPages(path) {
+      let total = 0, offset = 0;
+      while (true) {
+        const res = await fetch(apiURL(`${path}?limit=40&offset=${offset}`));
+        if (!res.ok) break;
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) break;
+        total += data.length;
+        if (data.length < 40) break;
+        offset += 40;
       }
-      const r = await fetch(fetchUrl);
-      if(!r.ok) continue;
-      const txt = await r.text();
-      if(txt && txt.length>0) return txt;
-    }catch(e){
-      // try next
-      continue;
+      return total;
     }
-  }
-  throw new Error('Impossibilité de récupérer la page (CORS / proxies indisponibles).');
-}
 
-async function load(){
-  el('err').textContent = '';
-  el('note').textContent = 'Récupération en cours…';
-  el('followers').textContent = el('projects').textContent = el('following').textContent = '…';
-  try{
-    const html = await fetchTextWithAttempts(TARGET);
-    const counts = extractCountsFromHtml(html);
-    el('followers').textContent = counts.followers == null ? '—' : counts.followers.toLocaleString('fr-FR');
-    el('projects').textContent  = counts.projects  == null ? '—' : counts.projects.toLocaleString('fr-FR');
-    el('following').textContent = counts.following == null ? '—' : counts.following.toLocaleString('fr-FR');
-    el('note').textContent = 'Données extraites de scratchviews.com (si vide, parsing non fiable).';
-    // if all null, show snippet for debugging
-    if(counts.followers==null && counts.projects==null && counts.following==null){
-      el('err').textContent = 'Parsing impossible : la page a une structure inattendue.';
+    async function loadProfile() {
+      try {
+        const [userRes, projectsRes] = await Promise.all([
+          fetch(apiURL(`/users/${USERNAME}`)),
+          fetch(apiURL(`/users/${USERNAME}/projects?limit=4`))
+        ]);
+
+        if (!userRes.ok) throw new Error('Utilisateur introuvable');
+
+        const user = await userRes.json();
+        const projects = await projectsRes.json();
+        const joined = new Date(user.history.joined)
+          .toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+
+        document.getElementById('profileCard').innerHTML = `
+          <div class="banner"></div>
+          <div class="profile-header">
+            <div class="avatar">
+              <img src="${user.profile.images['90x90']}" alt="Avatar" />
+            </div>
+            <div class="username">${user.username}</div>
+            <div class="joined">Membre depuis ${joined}${user.profile.country ? ' · ' + user.profile.country : ''}</div>
+            ${user.profile.bio   ? `<div class="bio">${user.profile.bio}</div>` : ''}
+            ${user.profile.status ? `<div class="status">🔨 ${user.profile.status}</div>` : ''}
+          </div>
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="stat-value" id="statFollowers"><span class="spin">⟳</span></div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statProjets"><span class="spin">⟳</span></div>
+              <div class="stat-label">Projets</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statSuivi"><span class="spin">⟳</span></div>
+              <div class="stat-label">Abonnements</div>
+            </div>
+          </div>
+          ${projects.length ? `
+            <div class="section-title">Projets récents</div>
+            <div class="projects-grid">
+              ${projects.map(p => `
+                <div class="project-card" onclick="window.open('https://scratch.mit.edu/projects/${p.id}')">
+                  <div class="project-thumb">
+                    <img
+                      src="https://cdn2.scratch.mit.edu/get_image/project/${p.id}_480x360.png"
+                      alt="${p.title}"
+                      onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>🎮</div>'"
+                    />
+                  </div>
+                  <div class="project-info">
+                    <div class="project-name">${p.title}</div>
+                    <div class="project-stats">❤️ ${p.stats?.loves||0} &nbsp;⭐ ${p.stats?.favorites||0} &nbsp;👁️ ${p.stats?.views||0}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          <a class="scratch-btn" href="https://scratch.mit.edu/users/${USERNAME}" target="_blank">
+            Voir le profil complet sur Scratch
+          </a>
+        `;
+
+        // Charger les 3 stats en parallèle
+        const results = await Promise.all([
+          countPages(`/users/${USERNAME}/followers`),
+          countPages(`/users/${USERNAME}/projects`),
+          countPages(`/users/${USERNAME}/following`)
+        ]);
+
+        const totalFollowers = results[0];
+        const totalProjets   = results[1];
+        const totalSuivis    = results[2];
+
+        document.getElementById('statFollowers').textContent = Math.max(0, totalFollowers - BOTS).toLocaleString('fr-FR');
+        document.getElementById('statProjets').textContent   = totalProjets.toLocaleString('fr-FR');
+        document.getElementById('statSuivi').textContent     = totalSuivis.toLocaleString('fr-FR');
+
+      } catch (e) {
+        document.getElementById('profileCard').innerHTML =
+          `<div class="loading">❌ Erreur : ${e.message}</div>`;
+      }
     }
-  }catch(err){
-    console.error(err);
-    el('err').textContent = 'Erreur : ' + (err.message || err);
-    el('note').textContent = 'Si erreur CORS, la seule solution fiable est un petit relais serveur.';
-    el('followers').textContent = el('projects').textContent = el('following').textContent = '—';
-  }
-}
 
-document.getElementById('retry').addEventListener('click', load);
-load();
-</script>
-</body>
-</html>
+    function initParticles() {
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const color = darkMode ? '108,99,255' : '76,151,255';
+      const pts = Array.from({ length: 80 }, () => ({
+        x:  Math.random() * canvas.width,
+        y:  Math.random() * canvas.height,
+        r:  Math.random() * 2 + 1,
+        dx: (Math.random() - 0.5) * 0.5,
+        dy: (Math.random() - 0.5) * 0.5,
+        a:  Math.random() * 0.4 + 0.1
+      }));
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pts.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${color},${p.a})`;
+          ctx.fill();
+          p.x += p.dx; p.y += p.dy;
+          if (p.x < 0 || p.x > canvas.width)  p.dx *= -1;
+          if (p.y < 0 || p.y > canvas.height)  p.dy *= -1;
+        });
+        window._raf = requestAnimationFrame(draw);
+      }
+      if (window._raf) cancelAnimationFrame(window._raf);
+      draw();
+    }
+
+    window.addEventListener('resize', initParticles);
+    initParticles();
+    loadProfile();
+  </script>
