@@ -32,15 +32,19 @@
 <script>
   const USER = 'Scratch_2_0_2_4';
   const out = id => document.getElementById(id);
+  
   async function load() {
     try {
-      const res = await fetch('https://scratchdb.lefty.one/v3/user/info/' + encodeURIComponent(USER));
-      if (!res.ok) throw new Error('Impossible de contacter ScratchDB (' + res.status + ')');
+      // Utilise un proxy CORS public qui ne cache pas
+      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://scratchdb.lefty.one/v3/user/info/' + encodeURIComponent(USER));
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const j = await res.json();
-      // chemins possibles pour les compteurs
+      
       const followers = j.statistics?.followers ?? j.stats?.followers ?? j.followers ?? null;
       const projects  = j.statistics?.projects  ?? j.stats?.projects  ?? j.project_count ?? j.projects ?? null;
       const following = j.statistics?.following ?? j.stats?.following ?? j.following ?? null;
+      
       out('followers').textContent = (typeof followers === 'number') ? followers.toLocaleString('fr-FR') : '—';
       out('projects').textContent  = (typeof projects  === 'number') ? projects.toLocaleString('fr-FR')  : '—';
       out('following').textContent = (typeof following === 'number') ? following.toLocaleString('fr-FR') : '—';
