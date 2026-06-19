@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil Scratch - Scratch_2_0_2_4</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      transition: background 0.3s;
+    }
+    body.dark { background: #0f0f1a; }
+
+    canvas#particles {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    .page {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .toggle-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 10;
+      padding: 8px 16px; border-radius: 20px;
+      border: 1px solid #ddd; background: white;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+    }
+    body.dark .toggle-btn {
+      background: #1e1e2e; border-color: #444; color: #eee;
+    }
+
+    .card {
+      background: white; border-radius: 16px;
+      overflow: hidden; margin-bottom: 1rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    body.dark .card {
+      background: #1e1e2e;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+
+    .banner {
+      height: 110px;
+      background: linear-gradient(135deg, #4C97FF, #9966FF);
+    }
+
+    .profile-header { padding: 0 1.5rem 1.5rem; }
+
+    .avatar {
+      width: 76px; height: 76px; border-radius: 50%;
+      border: 4px solid white; margin-top: -38px;
+      background: #4C97FF; overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    body.dark .avatar { border-color: #1e1e2e; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .username {
+      font-size: 22px; font-weight: 700;
+      color: #1a1a1a; margin-top: 10px;
+    }
+    body.dark .username { color: #f0f0f0; }
+
+    .joined { font-size: 13px; color: #777; margin-top: 3px; }
+    body.dark .joined { color: #aaa; }
+
+    .bio {
+      font-size: 14px; color: #555;
+      margin-top: 10px; line-height: 1.6;
+      white-space: pre-line;
+    }
+    body.dark .bio { color: #bbb; }
+
+    .status {
+      font-size: 14px; color: #555;
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+      line-height: 1.6; white-space: pre-line;
+    }
+    body.dark .status { color: #bbb; border-color: #2e2e3e; }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid #f0f0f0;
+    }
+    body.dark .stats-grid { border-color: #2e2e3e; }
+
+    .stat { padding: 1.1rem; text-align: center; }
+
+    .stat-value { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+    body.dark .stat-value { color: #f0f0f0; }
+
+    .stat-label { font-size: 12px; color: #999; margin-top: 3px; }
+    body.dark .stat-label { color: #aaa; }
+
+    .section-title {
+      font-size: 15px; font-weight: 700; color: #1a1a1a;
+      padding: 1rem 1.5rem 0.5rem;
+      border-top: 1px solid #f0f0f0;
+    }
+    body.dark .section-title { color: #f0f0f0; border-color: #2e2e3e; }
+
+    .projects-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px; padding: 0 1.5rem 1.5rem;
+    }
+
+    .project-card {
+      background: #f7f9ff; border-radius: 10px;
+      overflow: hidden; cursor: pointer;
+      border: 1px solid #eef0ff;
+      transition: transform 0.15s, background 0.3s;
+    }
+    .project-card:hover { transform: scale(1.02); }
+    body.dark .project-card { background: #2a2a3e; border-color: #3a3a4e; }
+
+    .project-thumb img {
+      width: 100%; height: 90px;
+      object-fit: cover; display: block;
+    }
+    .no-img {
+      width: 100%; height: 90px;
+      background: linear-gradient(135deg, #4C97FF22, #9966FF22);
+      display: flex; align-items: center;
+      justify-content: center; font-size: 28px;
+    }
+
+    .project-info { padding: 8px 10px 10px; }
+
+    .project-name {
+      font-size: 13px; font-weight: 600; color: #1a1a1a;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    body.dark .project-name { color: #f0f0f0; }
+
+    .project-stats { font-size: 11px; color: #999; margin-top: 3px; }
+    body.dark .project-stats { color: #aaa; }
+
+    .scratch-btn {
+      display: block; margin: 0 1.5rem 1.5rem;
+      padding: 12px; text-align: center;
+      background: #4C97FF; color: white;
+      border-radius: 10px; font-size: 15px;
+      font-weight: 600; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .scratch-btn:hover { background: #3a80e0; }
+
+    .loading { text-align: center; padding: 3rem; color: #999; font-size: 15px; }
+    body.dark .loading { color: #aaa; }
+
+    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="dark">
+  
+  <canvas id="particles"></canvas>
+  <button class="toggle-btn" onclick="toggleDark()" id="darkBtn">☀️ Mode clair</button>
+
+  <div class="page">
+    <div class="card" id="profileCard">
+      <div class="loading"><span class="spin">⟳</span> Chargement du profil...</div>
+    </div>
+  </div>
+
+  <script>
+    // Adapted for the requested user
+    const USERNAME = 'Scratch_2_0_2_4';
+    const BOTS = 0; // ajustez si vous voulez soustraire des comptes fantômes/bots
+    const PROXY = 'https://corsproxy.io/?url=';
+    let darkMode = true;
+
+    function toggleDark() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark', darkMode);
+      document.getElementById('darkBtn').textContent = darkMode ? '☀️ Mode clair' : '🌙 Mode sombre';
+      initParticles();
+    }
+
+    function apiURL(path) {
+      return PROXY + encodeURIComponent('https://api.scratch.mit.edu' + path);
+    }
+
+    async function countPages(path) {
+      let total = 0, offset = 0;
+      while (true) {
+        const res = await fetch(apiURL(`${path}?limit=40&offset=${offset}`));
+        if (!res.ok) break;
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) break;
+        total += data.length;
+        if (data.length < 40) break;
+        offset += 40;
+      }
+      return total;
+    }
+
+    async function loadProfile() {
+      try {
+        const [userRes, projectsRes] = await Promise.all([
+          fetch(apiURL(`/users/${USERNAME}`)),
+          fetch(apiURL(`/users/${USERNAME}/projects?limit=4`))
+        ]);
+
+        if (!userRes.ok) throw new Error('Utilisateur introuvable');
+
+        const user = await userRes.json();
+        const projects = await projectsRes.ok ? await projectsRes.json() : [];
+        const joinedRaw = user.history && user.history.joined ? user.history.joined : null;
+        const joined = joinedRaw
+          ? new Date(joinedRaw).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })
+          : 'date inconnue';
+
+        const avatarSrc = (user.profile && user.profile.images && user.profile.images['90x90'])
+          ? user.profile.images['90x90']
+          : '';
+
+        document.getElementById('profileCard').innerHTML = `
+          <div class="banner"></div>
+          <div class="profile-header">
+            <div class="avatar">
+              <img src="${avatarSrc}" alt="Avatar" onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>🙂</div>'" />
+            </div>
+            <div class="username">${user.username || USERNAME}</div>
+            <div class="joined">Membre depuis ${joined}${user.profile && user.profile.country ? ' · ' + user.profile.country : ''}</div>
+            ${user.profile && user.profile.bio   ? `<div class="bio">${user.profile.bio}</div>` : ''}
+            ${user.profile && user.profile.status ? `<div class="status">🔨 ${user.profile.status}</div>` : ''}
+          </div>
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="stat-value" id="statFollowers"><span class="spin">⟳</span></div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statProjets"><span class="spin">⟳</span></div>
+              <div class="stat-label">Projets</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statSuivi"><span class="spin">⟳</span></div>
+              <div class="stat-label">Abonnements</div>
+            </div>
+          </div>
+          ${projects && projects.length ? `
+            <div class="section-title">Projets récents</div>
+            <div class="projects-grid">
+              ${projects.map(p => `
+                <div class="project-card" onclick="window.open('https://scratch.mit.edu/projects/${p.id}')">
+                  <div class="project-thumb">
+                    <img
+                      src="https://cdn2.scratch.mit.edu/get_image/project/${p.id}_480x360.png"
+                      alt="${p.title}"
+                      onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>🎮</div>'"
+                    />
+                  </div>
+                  <div class="project-info">
+                    <div class="project-name">${p.title}</div>
+                    <div class="project-stats">❤️ ${p.stats?.loves||0} &nbsp;⭐ ${p.stats?.favorites||0} &nbsp;👁️ ${p.stats?.views||0}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          <a class="scratch-btn" href="https://scratch.mit.edu/users/${USERNAME}" target="_blank" rel="noopener">
+            Voir le profil complet sur Scratch
+          </a>
+        `;
+
+        // Charger les 3 stats en parallèle
+        const results = await Promise.all([
+          countPages(`/users/${USERNAME}/followers`),
+          countPages(`/users/${USERNAME}/projects`),
+          countPages(`/users/${USERNAME}/following`)
+        ]);
+
+        const totalFollowers = results[0];
+        const totalProjets   = results[1];
+        const totalSuivis    = results[2];
+
+        document.getElementById('statFollowers').textContent = Math.max(0, totalFollowers - BOTS).toLocaleString('fr-FR');
+        document.getElementById('statProjets').textContent   = totalProjets.toLocaleString('fr-FR');
+        document.getElementById('statSuivi').textContent     = totalSuivis.toLocaleString('fr-FR');
+
+      } catch (e) {
+        document.getElementById('profileCard').innerHTML =
+          `<div class="loading">❌ Erreur : ${e.message}</div>`;
+      }
+    }
+
+    function initParticles() {
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const color = darkMode ? '108,99,255' : '76,151,255';
+      const pts = Array.from({ length: 80 }, () => ({
+        x:  Math.random() * canvas.width,
+        y:  Math.random() * canvas.height,
+        r:  Math.random() * 2 + 1,
+        dx: (Math.random() - 0.5) * 0.5,
+        dy: (Math.random() - 0.5) * 0.5,
+        a:  Math.random() * 0.4 + 0.1
+      }));
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pts.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${color},${p.a})`;
+          ctx.fill();
+          p.x += p.dx; p.y += p.dy;
+          if (p.x < 0 || p.x > canvas.width)  p.dx *= -1;
+          if (p.y < 0 || p.y > canvas.height)  p.dy *= -1;
+        });
+        window._raf = requestAnimationFrame(draw);
+      }
+      if (window._raf) cancelAnimationFrame(window._raf);
+      draw();
+    }
+
+    window.addEventListener('resize', initParticles);
+    initParticles();
+    loadProfile();
+  </script>
+</body>
+</html>
