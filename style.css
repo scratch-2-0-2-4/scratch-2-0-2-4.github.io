@@ -2,7 +2,8 @@ body {
   text-align: center;
   font-family: Arial;
 }
+
 .footer {
-			   background-color: lightgray;
-			   color: gray;
-			}
+   background-color: black;
+   color: gray;
+}
