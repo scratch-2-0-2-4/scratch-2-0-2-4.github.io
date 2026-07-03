@@ -2,6 +2,7 @@ body {
   text-align: center;
   font-family: Arial;
 }
-footer{
-  background-color : #𝐷3𝐷3𝐷3;
-}
+.footer {
+			   background-color: lightgray;
+			   color: gray;
+			}
