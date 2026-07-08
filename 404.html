@@ -10,7 +10,11 @@
   <body>
     <h1 class="title">404</h1>
     <h2>Not Found</h2>
-    <p>La page que vous avez demandée est introuvable.</p>
+    <p>La page que vous avez demandé ( <strong id="missing"></strong> ) est introuvable.</p>
+    <script>
+      const path = window.location.pathname;
+      document.getElementById("missing").textContent = path;
+    </script>
     <a href="https://scratch-2-0-2-4.github.io/"><button style="border-radius:5px;">Retour à l'acceuil</button></a>
   </body>
 </html>
