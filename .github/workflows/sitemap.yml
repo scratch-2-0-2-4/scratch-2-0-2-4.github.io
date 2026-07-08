@@ -1,0 +1,28 @@
+name: Generate sitemap
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Generate sitemap.xml
+        uses: cicirello/generate-sitemap@v1
+        with:
+          base-url-path: https://scratch-2-0-2-4.github.io
+
+      - name: Commit and push sitemap.xml
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add sitemap.xml
+          git commit -m "Generate sitemap.xml"
+          git push
