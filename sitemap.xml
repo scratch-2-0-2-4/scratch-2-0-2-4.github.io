@@ -1,5 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Page d'accueil -->
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+
+  <!-- Pages principales -->
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/OS-Certificate-Center.html</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/amis.html</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/contacts.html</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+
+  <!-- Dossier /certificats/ -->
+  <!-- Ajoute ici toutes les pages du dossier -->
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/certificats/LHF-557-vvm.html</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+
+  <!-- Exemple pour ajouter d'autres certificats -->
+  <!--
+  <url>
+    <loc>https://scratch-2-0-2-4.github.io/certificats/NOM-DE-LA-PAGE.html</loc>
+    <lastmod>2026-07-09</lastmod>
+  </url>
+  -->
+
+</urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://scratch-2-0-2-4.github.io/</loc>
     <lastmod>2026-07-09</lastmod>
