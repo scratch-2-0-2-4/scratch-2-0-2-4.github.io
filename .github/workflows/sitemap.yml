@@ -17,16 +17,11 @@ jobs:
         with:
           base-url-path: https://scratch-2-0-2-4.github.io
           include-root: true
-          xml-declaration: true
-
-      - name: Force XML MIME type
-        run: |
-          echo "AddType application/xml .xml" > .htaccess
 
       - name: Commit and push sitemap.xml
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add sitemap.xml .htaccess
-          git commit -m "Fix sitemap for Google Search Console" || echo "No changes to commit"
+          git add sitemap.xml
+          git commit -m "Generate sitemap.xml" || echo "No changes to commit"
           git push
