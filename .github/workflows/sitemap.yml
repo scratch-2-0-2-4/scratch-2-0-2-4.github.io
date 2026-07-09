@@ -17,6 +17,9 @@ jobs:
         with:
           base-url-path: https://scratch-2-0-2-4.github.io
           include-root: true
+          exclude-paths: |
+            404.html
+            google*.html
 
       - name: Commit and push sitemap.xml
         run: |
