@@ -18,16 +18,17 @@ window.addEventListener("load", function(){
 
   window.cookieconsent.initialise({
     type: "opt-in",
+    revokable: false, /* désactive le petit onglet */
     palette: {
       popup: { background: "#000" },
       button: { background: "#f1d600" }
     },
     content: {
-      message: "Ce site utilise les cookies 🍪",
-      dismiss: "Refuser",
+      message: "Nous utilisons des cookies pour analyser la fréquentation et améliorer votre expérience.",
+      dismiss: "Refuser les 🍪",
       allow: "Accepter les 🍪",
       link: "En savoir plus +",
-      href: "/cookies.html"
+      href: "/politique-cookies.html"
     },
 
     onInitialise: function(status) {
@@ -44,7 +45,7 @@ window.addEventListener("load", function(){
 <!-- Consent Mode v2 : refus par défaut -->
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag(){ dataLayer.push(arguments); }
 
   gtag("consent", "default", {
     ad_storage: "denied",
@@ -65,11 +66,11 @@ function enableGA() {
 
   var s = document.createElement("script");
   s.async = true;
-  s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D";
+  s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D"; /* Ton ID GA4 */
   document.head.appendChild(s);
 
   gtag("js", new Date());
-  gtag("config", "G-VMVKWDFY5D");
+  gtag("config", "G-VMVKWDFY5D"); /* Ton ID GA4 */
 }
 </script>
 
