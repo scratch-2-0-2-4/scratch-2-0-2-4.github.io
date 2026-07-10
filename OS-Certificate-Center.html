@@ -17,21 +17,27 @@
     </li>
 
 
-    <script>
+<script>
 fetch('/search.json')
   .then(r => r.json())
   .then(data => {
+
+    // Création de l'index Lunr
     const idx = lunr(function () {
       this.ref('url');
       this.field('title');
       this.field('content');
 
-      data.forEach(doc => this.add(doc));
+      // 🔥 N'indexer QUE les pages dans /certificats/
+      data
+        .filter(doc => doc.url.startsWith("/certificats/"))
+        .forEach(doc => this.add(doc));
     });
 
     const searchInput = document.getElementById('search');
     const results = document.getElementById('results');
 
+    // Recherche en temps réel
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.trim();
       const matches = idx.search(query);
@@ -44,6 +50,5 @@ fetch('/search.json')
     });
   });
 </script>
-
   </body>
 </html>
