@@ -9,7 +9,7 @@
    })(window,document,'script','dataLayer','GTM-MML3T5ZR');</script>
   <!-- End Google Tag Manager -->
     
-  <!-- Osano CookieConsent -->
+<!-- Osano CookieConsent -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
 
@@ -17,7 +17,7 @@
 window.addEventListener("load", function(){
 
   window.cookieconsent.initialise({
-    type: "opt-in",  // bloque GA tant que pas accepté
+    type: "opt-in",
     palette: {
       popup: { background: "#000" },
       button: { background: "#f1d600" }
@@ -25,12 +25,12 @@ window.addEventListener("load", function(){
     content: {
       message: "Nous utilisons des cookies pour mesurer l’audience.",
       dismiss: "Refuser",
-      allow: "Accepter",
-      link: "En savoir plus",
-      href: "/politique-cookies.html"
+      allow: "Accepter"
+      /* lien supprimé */
+      /* link: "", */
+      /* href: "" */
     },
 
-    // GA4 activé seulement si l’utilisateur accepte
     onInitialise: function(status) {
       if (status == cookieconsent.status.allow) enableGA();
     },
@@ -64,7 +64,6 @@ function enableGA() {
     analytics_storage: "granted"
   });
 
-  // Charger GA4 uniquement après consentement
   var s = document.createElement("script");
   s.async = true;
   s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D";
