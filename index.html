@@ -9,14 +9,71 @@
    })(window,document,'script','dataLayer','GTM-MML3T5ZR');</script>
   <!-- End Google Tag Manager -->
     
-   <!-- Google tag (gtag.js) -->
-   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D"></script>
-   <script>
-     window.dataLayer = window.dataLayer || [];
-     function gtag(){dataLayer.push(arguments);}
-     gtag('js', new Date());
-     gtag('config', 'G-VMVKWDFY5D');
-    </script>
+  <!-- Osano CookieConsent -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+
+<script>
+window.addEventListener("load", function(){
+
+  window.cookieconsent.initialise({
+    type: "opt-in",  // bloque GA tant que pas accepté
+    palette: {
+      popup: { background: "#000" },
+      button: { background: "#f1d600" }
+    },
+    content: {
+      message: "Nous utilisons des cookies pour mesurer l’audience.",
+      dismiss: "Refuser",
+      allow: "Accepter",
+      link: "En savoir plus",
+      href: "/politique-cookies.html"
+    },
+
+    // GA4 activé seulement si l’utilisateur accepte
+    onInitialise: function(status) {
+      if (status == cookieconsent.status.allow) enableGA();
+    },
+    onStatusChange: function(status) {
+      if (status == cookieconsent.status.allow) enableGA();
+    }
+  });
+
+});
+</script>
+
+<!-- Consent Mode v2 : refus par défaut -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    analytics_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied"
+  });
+</script>
+
+<!-- Fonction qui charge GA4 après consentement -->
+<script>
+function enableGA() {
+
+  gtag("consent", "update", {
+    ad_storage: "granted",
+    analytics_storage: "granted"
+  });
+
+  // Charger GA4 uniquement après consentement
+  var s = document.createElement("script");
+  s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D";
+  document.head.appendChild(s);
+
+  gtag("js", new Date());
+  gtag("config", "G-VMVKWDFY5D");
+}
+</script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
