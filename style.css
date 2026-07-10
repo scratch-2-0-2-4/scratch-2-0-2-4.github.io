@@ -7,3 +7,16 @@ body {
    background-color: #000000;
    color: #ffffff;
 }
+.cc-message {
+  font-size: 14px !important;
+}
+
+.cc-message::after {
+  content: "Nous utilisons des cookies pour analyser la fréquentation et améliorer votre expérience." !important;
+  display: block !important;
+  color: #fff !important;
+}
+
+.cc-message > * {
+  display: none !important;
+}
