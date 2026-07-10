@@ -7,3 +7,21 @@ body {
    background-color: #000000;
    color: #ffffff;
 }
+
+
+.cc-revoke,
+.cc-revoke.cc-bottom,
+.cc-revoke.cc-right,
+.cc-revoke.cc-left,
+.cc-revoke.cc-floating,
+.cc-revoke:hover {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
