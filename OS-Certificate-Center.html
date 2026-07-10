@@ -15,5 +15,35 @@
   <h1>Liste des certificats :</h1>
     <li> <a href="https://scratch-2-0-2-4.github.io/certificats/LHF-557-vvm.html">LHF-557-vvm</a>
     </li>
+
+
+    <script>
+fetch('/search.json')
+  .then(r => r.json())
+  .then(data => {
+    const idx = lunr(function () {
+      this.ref('url');
+      this.field('title');
+      this.field('content');
+
+      data.forEach(doc => this.add(doc));
+    });
+
+    const searchInput = document.getElementById('search');
+    const results = document.getElementById('results');
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      const matches = idx.search(query);
+      results.innerHTML = '';
+
+      matches.forEach(match => {
+        const item = data.find(d => d.url === match.ref);
+        results.innerHTML += `<li><a href="${item.url}">${item.title}</a></li>`;
+      });
+    });
+  });
+</script>
+
   </body>
 </html>
