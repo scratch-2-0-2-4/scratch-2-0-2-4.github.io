@@ -6,7 +6,6 @@
     <title>OS Certificate Center</title>
     <link rel="icon" type="image/png" href="https://cdn2.scratch.mit.edu/get_image/user/129754968_90x90.png">
     <link href="/style.css" rel="stylesheet" type="text/css" media="all">
-    <script src="https://unpkg.com/lunr/lunr.js"></script>
   </head>
   <body>
     <input type="text" id="search" placeholder="Rechercher un certificat..." />
@@ -15,40 +14,5 @@
   <h1>Liste des certificats :</h1>
     <li> <a href="https://scratch-2-0-2-4.github.io/certificats/LHF-557-vvm.html">LHF-557-vvm</a>
     </li>
-
-
-<script>
-fetch('/search.json')
-  .then(r => r.json())
-  .then(data => {
-
-    // Création de l'index Lunr
-    const idx = lunr(function () {
-      this.ref('url');
-      this.field('title');
-      this.field('content');
-
-      // 🔥 N'indexer QUE les pages dans /certificats/
-      data
-        .filter(doc => doc.url.startsWith("/certificats/"))
-        .forEach(doc => this.add(doc));
-    });
-
-    const searchInput = document.getElementById('search');
-    const results = document.getElementById('results');
-
-    // Recherche en temps réel
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim();
-      const matches = idx.search(query);
-      results.innerHTML = '';
-
-      matches.forEach(match => {
-        const item = data.find(d => d.url === match.ref);
-        results.innerHTML += `<li><a href="${item.url}">${item.title}</a></li>`;
-      });
-    });
-  });
-</script>
   </body>
 </html>
