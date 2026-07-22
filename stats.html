@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Stats</title>
+</head>
+<body>
+
+  <h2>Followers</h2>
+  <div id="stat-followers">—</div>
+
+  <h2>Projets</h2>
+  <div id="stat-projects">—</div>
+
+  <h2>Abonnements</h2>
+  <div id="stat-following">—</div>
+
+  <script>
+    async function loadStats() {
+      try {
+        const res = await fetch('https://crimson-resonance-40a3.gqekljen2.workers.dev/stats/Scratch_2_0_2_4');
+        const data = await res.json();
+        const f = data.followers.toLocaleString('fr-FR');
+        document.getElementById('main-followers').textContent = f;
+        document.getElementById('stat-followers').textContent = f;
+        document.getElementById('stat-projects').textContent = data.projects.toLocaleString('fr-FR');
+        document.getElementById('stat-following').textContent = data.following.toLocaleString('fr-FR');
+      } catch(e) {
+        ['main-followers','stat-followers','stat-projects','stat-following'].forEach(id => {
+          document.getElementById(id).textContent = '—';
+        });
+      }
+    }
+
+    loadStats();
+  </script>
+
+</body>
+</html>
