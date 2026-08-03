@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-  <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
    })(window,document,'script','dataLayer','GTM-MML3T5ZR');</script>
-  <!-- End Google Tag Manager -->
-    
-<!-- Osano CookieConsent -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
 
 <script>
@@ -18,7 +14,7 @@ window.addEventListener("load", function(){
 
   window.cookieconsent.initialise({
     type: "opt-in",
-    revokable: false, /* désactive le petit onglet */
+    revokable: false,
     palette: {
       popup: { background: "#000" },
       button: { background: "#f1d600" }
@@ -42,7 +38,6 @@ window.addEventListener("load", function(){
 });
 </script>
 
-<!-- Consent Mode v2 : refus par défaut -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
@@ -55,7 +50,6 @@ window.addEventListener("load", function(){
   });
 </script>
 
-<!-- Fonction qui charge GA4 après consentement -->
 <script>
 function enableGA() {
 
@@ -66,14 +60,29 @@ function enableGA() {
 
   var s = document.createElement("script");
   s.async = true;
-  s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D"; /* Ton ID GA4 */
+  s.src = "https://www.googletagmanager.com/gtag/js?id=G-VMVKWDFY5D";
   document.head.appendChild(s);
 
   gtag("js", new Date());
-  gtag("config", "G-VMVKWDFY5D"); /* Ton ID GA4 */
+  gtag("config", "G-VMVKWDFY5D");
 }
 </script>
 
+  <script>
+    var onloadCallback = function() {
+      grecaptcha.render('recaptcha-auto', {
+        'sitekey' : '6LdiN3MtAAAAAFC9UXex2kE3iWHDaZJ6fmApSus9',
+        'callback' : quandCestValide,
+        'size' : 'invisible'
+      });
+      grecaptcha.execute();
+    };
+
+    function quandCestValide(token) {
+      console.log("Utilisateur vérifié automatiquement !");
+    }
+  </script>
+  <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,10 +91,10 @@ function enableGA() {
     <link href="/style.css" rel="stylesheet" type="text/css" media="all">
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MML3T5ZR"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <div id="recaptcha-auto"></div>
+
     <script>NekoType="socks"</script>
     <h1 id=nl><script src="https://webneko.net/n20171213.js"></script><a 
     href="https://webneko.net">Neko</a></h1>
